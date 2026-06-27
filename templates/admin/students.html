@@ -1,0 +1,245 @@
+{% extends "admin/base.html" %}
+{% set active = 'students' %}
+{% block title %}Manage Students{% endblock %}
+{% block admin_content %}
+
+<div class="admin-header">
+  <div>
+    <h1>Students</h1>
+    <p>Import class rosters, manage profiles, and upload yearbook photos.</p>
+  </div>
+  <button class="btn-sm gold" onclick="openModal('importModal')"><i class="fas fa-file-excel"></i> Import Excel</button>
+</div>
+
+<div class="admin-card">
+  <h3>Filter by class</h3>
+  <div class="tab-row">
+    <a href="{{ url_for('admin_students') }}" class="tab {{ 'active' if not class_filter else '' }}">All</a>
+    {% for c in classes_rows %}
+    <a href="{{ url_for('admin_students', class=c['class_name']) }}" class="tab {{ 'active' if class_filter==c['class_name'] else '' }}">{{ c['class_name'] }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="admin-card">
+  <h3>{{ students|length }} student{{ 's' if students|length != 1 else '' }}{{ ' in ' + class_filter if class_filter else '' }}</h3>
+  {% if students %}
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Class</th><th>Nickname</th><th>Photos</th><th></th></tr></thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ s.full_name }}</td>
+        <td><span class="admin-pill">{{ s.class_name }}</span></td>
+        <td style="color:var(--muted)">{{ s.nickname or '—' }}</td>
+        <td>
+          {% if s.photo_count > 0 %}<span class="admin-pill ok">{{ s.photo_count }} photo{{ 's' if s.photo_count != 1 else '' }}</span>
+          {% else %}<span class="admin-pill warn">No photos</span>{% endif %}
+        </td>
+        <td style="white-space:nowrap">
+          <button class="row-action edit" onclick="openEditModal({{ s.id }}, {{ s|tojson }})" title="Edit details"><i class="fas fa-pen"></i></button>
+          <button class="row-action edit" onclick="openPhotoManager({{ s.id }}, {{ s.full_name|tojson }})" title="Manage photos"><i class="fas fa-camera"></i></button>
+          <a href="{{ url_for('student_profile', student_id=s.id) }}" target="_blank" class="row-action" title="View profile"><i class="fas fa-eye"></i></a>
+          <button class="row-action" onclick="deleteStudent({{ s.id }}, {{ s.full_name|tojson }})" title="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-user-graduate"></i><p>No students yet. Import an Excel file to get started.</p></div>
+  {% endif %}
+</div>
+
+<!-- Import Modal -->
+<div class="modal-bg" id="importModal">
+  <div class="modal-box-sm">
+    <h3>Import Class Roster</h3>
+    <form id="importForm">
+      <div class="form-row">
+        <label>Class Name</label>
+        <input type="text" id="importClassName" placeholder="e.g. SSS 3A" required>
+      </div>
+      <div class="form-row">
+        <label>Excel File (Google Forms export)</label>
+        <div class="drop-zone-sm" id="importDropZone">
+          <i class="fas fa-file-excel"></i>
+          <p id="importFileLabel">Click or drop .xlsx file here</p>
+          <input type="file" id="importFileInput" accept=".xlsx,.xls">
+        </div>
+      </div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem">
+        <button type="button" class="btn-sm ghost" onclick="closeModal('importModal')">Cancel</button>
+        <button type="submit" class="btn-sm gold" id="importSubmitBtn"><i class="fas fa-upload"></i> Import</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal-box-sm" style="max-width:600px">
+    <h3>Edit Student</h3>
+    <form id="editForm">
+      <input type="hidden" id="editId">
+      <div class="form-grid-2">
+        <div class="form-row"><label>Full Name</label><input type="text" id="editFullName"></div>
+        <div class="form-row"><label>Class</label><input type="text" id="editClassName"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row"><label>Nickname</label><input type="text" id="editNickname"></div>
+        <div class="form-row"><label>Post Held</label><input type="text" id="editPostHeld"></div>
+      </div>
+      <div class="form-row"><label>Future Ambition</label><input type="text" id="editFutureAmbition"></div>
+      <div class="form-row"><label>Favourite Quote</label><textarea id="editFavouriteQuote" rows="2"></textarea></div>
+      <div class="form-row"><label>Parting Words</label><textarea id="editPartingWords" rows="3"></textarea></div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:1rem">
+        For the other ~40 yearbook questionnaire fields, open the live profile (eye icon) to review what was imported — corrections there can be made via this same edit panel by request.
+      </p>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end">
+        <button type="button" class="btn-sm ghost" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn-sm gold"><i class="fas fa-check"></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Photo Manager Modal -->
+<div class="modal-bg" id="photoModal">
+  <div class="modal-box-sm" style="max-width:640px">
+    <h3 id="photoModalTitle">Manage Photos</h3>
+    <div class="drop-zone-sm" id="photoDropZone">
+      <i class="fas fa-camera"></i>
+      <p>Click or drop multiple photos here — no limit</p>
+      <input type="file" id="photoFileInput" accept="image/*" multiple>
+    </div>
+    <div class="photo-mini-grid" id="photoMiniGrid"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1.2rem">
+      <button type="button" class="btn-sm ghost" onclick="closeModal('photoModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let importFile = null;
+setupDropZone('importDropZone', 'importFileInput', (files) => {
+  importFile = files[0];
+  document.getElementById('importFileLabel').textContent = importFile.name;
+});
+
+function openEditModal(id, student) {
+  document.getElementById('editId').value = id;
+  document.getElementById('editFullName').value = student.full_name || '';
+  document.getElementById('editClassName').value = student.class_name || '';
+  document.getElementById('editNickname').value = student.nickname || '';
+  document.getElementById('editPostHeld').value = student.post_held || '';
+  document.getElementById('editFutureAmbition').value = student.future_ambition || '';
+  document.getElementById('editFavouriteQuote').value = student.favourite_quote || '';
+  document.getElementById('editPartingWords').value = student.parting_words || '';
+  openModal('editModal');
+}
+
+document.getElementById('editForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('editId').value;
+  const payload = {
+    fullName: document.getElementById('editFullName').value,
+    className: document.getElementById('editClassName').value,
+    nickname: document.getElementById('editNickname').value,
+    postHeld: document.getElementById('editPostHeld').value,
+    futureAmbition: document.getElementById('editFutureAmbition').value,
+    favouriteQuote: document.getElementById('editFavouriteQuote').value,
+    partingWords: document.getElementById('editPartingWords').value,
+  };
+  const result = await postJSON(apiUrl(`/admin/students/${id}/edit`), payload);
+  if (result.ok) { showToast('Student updated', 'ok'); setTimeout(() => location.reload(), 700); }
+  else showToast(result.error || 'Update failed', 'err');
+});
+
+document.getElementById('importForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const className = document.getElementById('importClassName').value.trim();
+  if (!className) { showToast('Please enter a class name', 'err'); return; }
+  if (!importFile) { showToast('Please choose an Excel file', 'err'); return; }
+  const btn = document.getElementById('importSubmitBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+  const fd = new FormData();
+  fd.append('class_name', className);
+  fd.append('file', importFile);
+  const result = await postForm('{{ url_for("admin_import_students") }}', fd);
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-upload"></i> Import';
+  if (result.ok) {
+    showToast(`Imported ${result.inserted} students (${result.skipped_duplicates} duplicates skipped)`, 'ok');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    showToast(result.error || 'Import failed', 'err');
+  }
+});
+
+let currentPhotoStudentId = null;
+
+async function openPhotoManager(studentId, studentName) {
+  currentPhotoStudentId = studentId;
+  document.getElementById('photoModalTitle').textContent = `Photos — ${studentName}`;
+  openModal('photoModal');
+  await refreshPhotoGrid();
+}
+
+async function refreshPhotoGrid() {
+  const grid = document.getElementById('photoMiniGrid');
+  grid.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Loading...</p>';
+  const res = await fetch(apiUrl(`/admin/students/${currentPhotoStudentId}/photos-list`));
+  if (!res.ok) { grid.innerHTML = ''; return; }
+  const data = await res.json();
+  if (!data.photos || data.photos.length === 0) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:.85rem;grid-column:1/-1">No photos uploaded yet.</p>';
+    return;
+  }
+  grid.innerHTML = data.photos.map(p => `
+    <div class="photo-mini">
+      <img src="${p.data_url}" loading="lazy">
+      ${p.is_cover ? '<span class="cover-badge">COVER</span>' : ''}
+      <div class="mini-actions">
+        ${!p.is_cover ? `<button onclick="setCover(${p.id})" title="Set as cover"><i class="fas fa-star"></i></button>` : ''}
+        <button onclick="deletePhoto(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+setupDropZone('photoDropZone', 'photoFileInput', async (files) => {
+  if (!currentPhotoStudentId) return;
+  const fd = new FormData();
+  for (const f of files) fd.append('photos', f);
+  showToast('Uploading photos...', 'info');
+  const result = await postForm(apiUrl(`/admin/students/${currentPhotoStudentId}/photos`), fd);
+  if (result.ok) {
+    showToast(`Added ${result.added} photo(s)`, 'ok');
+    await refreshPhotoGrid();
+    document.getElementById('photoFileInput').value = '';
+  } else {
+    showToast(result.error || 'Upload failed', 'err');
+  }
+});
+
+async function setCover(photoId) {
+  const result = await postJSON(apiUrl(`/admin/photos/${photoId}/set-cover`), {});
+  if (result.ok) { showToast('Cover photo updated', 'ok'); await refreshPhotoGrid(); }
+}
+
+async function deletePhoto(photoId) {
+  if (!confirmAction('Delete this photo?')) return;
+  const result = await postJSON(apiUrl(`/admin/photos/${photoId}/delete`), {});
+  if (result.ok) { showToast('Photo deleted', 'ok'); await refreshPhotoGrid(); }
+}
+
+async function deleteStudent(studentId, name) {
+  if (!confirmAction(`Delete ${name}? This removes their profile and all photos.`)) return;
+  const result = await postJSON(apiUrl(`/admin/students/${studentId}/delete`), {});
+  if (result.ok) { showToast('Student deleted', 'ok'); setTimeout(() => location.reload(), 800); }
+}
+</script>
+{% endblock %}

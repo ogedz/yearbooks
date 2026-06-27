@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Admin — {{ settings.school_name }}{% endblock %}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+
+<button id="mobileAdminBtn"><i class="fas fa-bars"></i></button>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="{{ url_for('admin_dashboard') }}" class="admin-brand">
+      <div class="seal" style="width:36px;height:36px"><span class="seal-mark" style="font-size:.75rem">U</span></div>
+      <span>Admin</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if active=='dashboard' else '' }}"><i class="fas fa-gauge"></i> Dashboard</a>
+      <a href="{{ url_for('admin_students') }}" class="{{ 'active' if active=='students' else '' }}"><i class="fas fa-user-graduate"></i> Students</a>
+      <a href="{{ url_for('admin_staff') }}" class="{{ 'active' if active=='staff' else '' }}"><i class="fas fa-chalkboard-teacher"></i> Staff</a>
+      <a href="{{ url_for('admin_leadership') }}" class="{{ 'active' if active=='leadership' else '' }}"><i class="fas fa-user-tie"></i> Leadership</a>
+      <a href="{{ url_for('admin_articles') }}" class="{{ 'active' if active=='articles' else '' }}"><i class="fas fa-feather-alt"></i> Articles</a>
+      <a href="{{ url_for('admin_gallery') }}" class="{{ 'active' if active=='gallery' else '' }}"><i class="fas fa-images"></i> Gallery</a>
+      <a href="{{ url_for('admin_settings') }}" class="{{ 'active' if active=='settings' else '' }}"><i class="fas fa-cog"></i> Settings</a>
+      <div class="admin-nav-divider"></div>
+      <a href="{{ url_for('home') }}" target="_blank"><i class="fas fa-external-link-alt"></i> View Live Site</a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    {% block admin_content %}{% endblock %}
+  </main>
+</div>
+
+<div id="toastHost"></div>
+<script>window.APP_PREFIX = "{{ request.script_root }}";</script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

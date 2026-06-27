@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% set active_page = 'classes' %}
+{% block title %}{{ class_name }} — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+  <div class="eyebrow"><a href="{{ url_for('classes') }}" style="color:var(--accent)"><i class="fas fa-arrow-left"></i> All Classes</a></div>
+  <h1>{{ class_name }}</h1>
+  <p>{{ students|length }} graduating student{{ 's' if students|length != 1 else '' }}</p>
+</section>
+
+<div class="section-wrap">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" id="studentSearch" placeholder="Search by name or nickname...">
+    </div>
+  </div>
+  <p class="results-info" id="resultsInfo"><strong>{{ students|length }}</strong> students in {{ class_name }}</p>
+
+  <div class="sgrid" id="studentGrid">
+    {% for s in students %}
+    <a href="{{ url_for('student_profile', student_id=s.id) }}" class="scard card-in" style="animation-delay:{{ (loop.index0 * 0.04)|round(2) }}s"
+       data-name="{{ s.full_name|lower }}" data-nick="{{ s.nickname|lower }}">
+      <div class="scard-photo">
+        {% if s.cover_photo %}
+          <img src="{{ s.cover_photo }}" alt="{{ s.full_name }}">
+        {% else %}
+          <span class="js-avatar" data-name="{{ s.full_name }}"></span>
+        {% endif %}
+      </div>
+      <div class="scard-body">
+        <div class="scard-name">{{ s.full_name }}</div>
+        {% if s.nickname %}<div class="scard-nick">"{{ s.nickname.split(',')[0] }}"</div>{% endif %}
+        {% if s.future_ambition %}<div class="scard-meta"><i class="fas fa-star" style="color:var(--accent-dim);margin-right:.3rem"></i>{{ s.future_ambition }}</div>{% endif %}
+        <div class="scard-hint"><span>View Profile</span> <i class="fas fa-arrow-right" style="font-size:.65rem"></i></div>
+      </div>
+    </a>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-user-graduate"></i>
+      <p>No students added to this class yet.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.js-avatar').forEach(el => {
+  el.outerHTML = avatarHTML(el.dataset.name, 200);
+});
+
+const searchInput = document.getElementById('studentSearch');
+const cards = Array.from(document.querySelectorAll('#studentGrid .scard'));
+const resultsInfo = document.getElementById('resultsInfo');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  let visible = 0;
+  cards.forEach(c => {
+    const match = !q || c.dataset.name.includes(q) || c.dataset.nick.includes(q);
+    c.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  resultsInfo.innerHTML = `<strong>${visible}</strong> of <strong>${cards.length}</strong> students`;
+});
+</script>
+{% endblock %}

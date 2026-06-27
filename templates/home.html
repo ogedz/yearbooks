@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% set active_page = 'home' %}
+{% block content %}
+
+<section class="page-hero" style="min-height:88vh;display:flex;align-items:center;padding-top:0">
+  <div style="position:relative;z-index:1;text-align:center;padding:2rem;max-width:760px;margin:0 auto">
+    <div class="seal" style="margin:0 auto 1.5rem;width:78px;height:78px"><span class="seal-mark" style="font-size:1.3rem">U</span></div>
+    <div class="eyebrow">{{ settings.school_name }}</div>
+    <h1 style="font-size:clamp(3rem,9vw,6.2rem);font-weight:900;color:#fff;line-height:1;letter-spacing:-2px;margin-bottom:.4rem">
+      CLASS OF <em style="font-style:normal;color:var(--accent)">{{ settings.graduation_year }}</em>
+    </h1>
+    <p style="color:rgba(255,255,255,.6);font-size:clamp(.95rem,2vw,1.15rem);font-weight:300;letter-spacing:1px;margin-bottom:.4rem">
+      The Prime Forge Set
+    </p>
+    <p style="color:rgba(255,255,255,.35);font-size:.9rem;margin-bottom:2.4rem">
+      A celebration of memories, dreams, friendships &amp; six unforgettable years
+    </p>
+    <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+      <a href="{{ url_for('classes') }}" class="btn btn-gold"><i class="fas fa-users"></i> Meet the Students</a>
+      <a href="{{ url_for('gallery') }}" class="btn" style="background:transparent;color:rgba(255,255,255,.75);border:1.5px solid rgba(255,255,255,.2)"><i class="fas fa-images"></i> Photo Gallery</a>
+    </div>
+  </div>
+</section>
+
+<div class="section-wrap" style="padding-top:0;margin-top:-3.5rem;position:relative;z-index:2">
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" data-target="{{ student_count }}">0</div><div class="stat-lbl">Graduating Students</div></div>
+    <div class="stat-box"><div class="stat-num" data-target="{{ teaching_count }}">0</div><div class="stat-lbl">Teaching Staff</div></div>
+    <div class="stat-box"><div class="stat-num" data-target="{{ nonteaching_count }}">0</div><div class="stat-lbl">Non-Teaching Staff</div></div>
+    <div class="stat-box"><div class="stat-num" data-target="{{ class_count }}">0</div><div class="stat-lbl">Classes</div></div>
+    <div class="stat-box"><div class="stat-num" data-target="6">0</div><div class="stat-lbl">Years of Memories</div></div>
+  </div>
+</div>
+
+{% if leaders and leaders|selectattr('title', 'in', ['Principal']) | list %}
+{% set principal = (leaders | selectattr('title', 'in', ['Principal']) | list)[0] %}
+<div class="section-wrap" style="padding-top:0">
+  <div class="foil-divider"><span class="line"></span><span class="dot"></span><span class="line"></span></div>
+  <div style="max-width:720px;margin:0 auto;background:var(--paper);border-radius:20px;box-shadow:var(--shadow-sm);padding:2.2rem;text-align:center">
+    <div style="width:90px;height:90px;border-radius:50%;margin:0 auto 1rem;overflow:hidden;background:linear-gradient(135deg,#e8e0d4,#ddd5c8);display:flex;align-items:center;justify-content:center">
+      {% if principal.photo %}<img src="{{ principal.photo }}" style="width:100%;height:100%;object-fit:cover">{% else %}<span id="principalAvatar"></span>{% endif %}
+    </div>
+    <h3 style="color:var(--primary);font-size:1.3rem;font-weight:800">{{ principal.name }}</h3>
+    <p style="color:var(--accent-dim);font-weight:700;font-size:.85rem;margin-bottom:1rem">{{ principal.title }}</p>
+    <p style="font-style:italic;color:var(--fg);line-height:1.7;font-size:.95rem">"{{ principal.message }}"</p>
+  </div>
+</div>
+<script>
+{% if not principal.photo %}
+document.getElementById('principalAvatar').outerHTML = avatarHTML({{ principal.name|tojson }}, 90);
+{% endif %}
+</script>
+{% endif %}
+
+<div class="section-wrap" style="padding-top:0">
+  <div class="foil-divider"><span class="line"></span><span class="dot"></span><span class="line"></span></div>
+  <div class="section-title">
+    <h2>Find Your Class</h2>
+    <p>Every face tells a story, every story fills a chapter</p>
+  </div>
+  <div style="text-align:center">
+    <a href="{{ url_for('classes') }}" class="btn btn-gold">Browse All Classes <i class="fas fa-arrow-right"></i></a>
+  </div>
+</div>
+
+{% endblock %}

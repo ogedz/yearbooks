@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active_page = 'articles' %}
+{% block title %}Articles &amp; Write-ups — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+  <div class="eyebrow">Voices of the Set</div>
+  <h1>Articles &amp; Write-ups</h1>
+  <p>Reflections, speeches &amp; creative expressions from the Class of {{ settings.graduation_year }}</p>
+</section>
+
+<div class="section-wrap">
+  {% if articles %}
+  <div class="articles-grid">
+    {% for a in articles %}
+    <a href="{{ url_for('article_detail', article_id=a.id) }}" class="article-card">
+      {% if a.cover_image %}<div class="article-img" style="background-image:url('{{ a.cover_image }}')"></div>{% endif %}
+      <div class="article-body">
+        <div class="article-cat">{{ a.category }}</div>
+        <div class="article-title">{{ a.title }}</div>
+        {% if a.author %}<div class="article-author">By {{ a.author }}</div>{% endif %}
+        <div class="article-excerpt">{{ a.content|striptags }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-feather-alt"></i><p>No articles published yet.</p></div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% set active_page = 'leadership' %}
+{% block title %}School Leadership — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+  <div class="eyebrow">Guiding Our Journey</div>
+  <h1>School Leadership</h1>
+  <p>Guiding {{ settings.school_name }} with vision and dedication</p>
+</section>
+
+<div class="section-wrap">
+  {% if leaders %}
+  <div class="leader-grid">
+    {% for l in leaders %}
+    <div class="leader-card">
+      <div class="leader-photo">
+        {% if l.photo %}<img src="{{ l.photo }}" alt="{{ l.name }}">{% else %}<span class="js-avatar" data-name="{{ l.name }}"></span>{% endif %}
+      </div>
+      <div class="leader-info">
+        <div class="leader-role">{{ l.title }}</div>
+        <div class="leader-name">{{ l.name }}</div>
+        {% if l.message %}<p class="leader-msg">"{{ l.message }}"</p>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-user-tie"></i><p>Leadership profiles have not been added yet.</p></div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.js-avatar').forEach(el => { el.outerHTML = avatarHTML(el.dataset.name, 260); });
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+{% set active = 'articles' %}
+{% block title %}Manage Articles{% endblock %}
+{% block admin_content %}
+
+<div class="admin-header">
+  <div>
+    <h1>Articles &amp; Write-ups</h1>
+    <p>Speeches, editorials, and reflections from the graduating class.</p>
+  </div>
+  <button class="btn-sm gold" onclick="openModal('addArticleModal')"><i class="fas fa-plus"></i> New Article</button>
+</div>
+
+<div class="admin-card">
+  {% if articles %}
+  <table class="admin-table">
+    <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for a in articles %}
+      <tr>
+        <td>{{ a.title }}</td>
+        <td>{{ a.author or '—' }}</td>
+        <td><span class="admin-pill">{{ a.category }}</span></td>
+        <td><span class="admin-pill {{ 'ok' if a.status=='Published' else 'warn' }}">{{ a.status }}</span></td>
+        <td style="white-space:nowrap">
+          <a href="{{ url_for('article_detail', article_id=a.id) }}" target="_blank" class="row-action" title="Preview"><i class="fas fa-eye"></i></a>
+          <button class="row-action edit" onclick="toggleArticle({{ a.id }})" title="Toggle Published/Draft"><i class="fas fa-toggle-on"></i></button>
+          <button class="row-action" onclick="deleteArticle({{ a.id }}, {{ a.title|tojson }})" title="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-feather-alt"></i><p>No articles yet.</p></div>
+  {% endif %}
+</div>
+
+<div class="modal-bg" id="addArticleModal">
+  <div class="modal-box-sm" style="max-width:680px">
+    <h3>New Article</h3>
+    <form id="addArticleForm">
+      <div class="form-row"><label>Title</label><input type="text" name="title" required></div>
+      <div class="form-grid-2">
+        <div class="form-row"><label>Author</label><input type="text" name="author"></div>
+        <div class="form-row"><label>Category</label>
+          <select name="category">
+            <option>Reflection</option><option>Creative Writing</option><option>Opinion</option>
+            <option>Tribute</option><option>Speech</option><option>Editorial</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row"><label>Content</label><textarea name="content" rows="8" placeholder="Write the article — separate paragraphs with a blank line."></textarea></div>
+      <div class="form-row">
+        <label>Cover Image (optional)</label>
+        <div class="drop-zone-sm" id="articleImgDropZone"><i class="fas fa-image"></i><p id="articleImgLabel">Click or drop an image</p><input type="file" id="articleImgFileInput" accept="image/*"></div>
+      </div>
+      <div class="form-row"><label>Status</label>
+        <select name="status"><option value="Published">Published</option><option value="Draft">Draft</option></select>
+      </div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem">
+        <button type="button" class="btn-sm ghost" onclick="closeModal('addArticleModal')">Cancel</button>
+        <button type="submit" class="btn-sm gold"><i class="fas fa-check"></i> Save Article</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let articleImgFile = null;
+setupDropZone('articleImgDropZone', 'articleImgFileInput', f => {
+  articleImgFile = f[0];
+  document.getElementById('articleImgLabel').textContent = articleImgFile.name;
+});
+
+document.getElementById('addArticleForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  if (articleImgFile) fd.append('cover_image', articleImgFile);
+  const result = await postForm('{{ url_for("admin_add_article") }}', fd);
+  if (result.ok) { showToast('Article saved', 'ok'); setTimeout(() => location.reload(), 800); }
+  else showToast(result.error || 'Failed', 'err');
+});
+
+async function toggleArticle(id) {
+  const result = await postJSON(apiUrl(`/admin/articles/${id}/toggle`), {});
+  if (result.ok) { showToast(`Status: ${result.status}`, 'ok'); setTimeout(() => location.reload(), 600); }
+}
+
+async function deleteArticle(id, title) {
+  if (!confirmAction(`Delete "${title}"?`)) return;
+  const result = await postJSON(apiUrl(`/admin/articles/${id}/delete`), {});
+  if (result.ok) { showToast('Deleted', 'ok'); setTimeout(() => location.reload(), 700); }
+}
+</script>
+{% endblock %}

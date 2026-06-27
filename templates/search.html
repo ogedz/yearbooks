@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Search — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="page-hero" style="padding-bottom:2rem">
+  <div class="eyebrow">Search Everywhere</div>
+  <h1>Find Anything</h1>
+  <form action="{{ url_for('search') }}" method="get" style="max-width:480px;margin:1.5rem auto 0;position:relative">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search students, staff, articles, gallery..."
+           style="width:100%;padding:.9rem 1.2rem;border-radius:50px;border:none;font-size:.95rem;font-family:var(--sans)" autofocus>
+  </form>
+</section>
+
+<div class="section-wrap">
+  {% if q %}
+    {% set total = (results.students|length) + (results.staff|length) + (results.articles|length) + (results.gallery|length) %}
+    <p class="results-info">Found <strong>{{ total }}</strong> result{{ 's' if total != 1 else '' }} for "{{ q }}"</p>
+
+    {% if results.students %}
+    <div class="dept-heading"><h3>Students</h3><span class="line"></span></div>
+    <div class="sgrid" style="margin-bottom:2rem">
+      {% for s in results.students %}
+      <a href="{{ url_for('student_profile', student_id=s.id) }}" class="scard">
+        <div class="scard-photo"><span class="js-avatar" data-name="{{ s.full_name }}"></span></div>
+        <div class="scard-body">
+          <div class="scard-name">{{ s.full_name }}</div>
+          <div class="scard-meta">{{ s.class_name }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.staff %}
+    <div class="dept-heading"><h3>Staff</h3><span class="line"></span></div>
+    <div class="staff-grid" style="margin-bottom:2rem">
+      {% for m in results.staff %}
+      <div class="staff-card">
+        <div class="staff-photo">{% if m.photo %}<img src="{{ m.photo }}">{% else %}<span class="js-avatar" data-name="{{ m.name }}"></span>{% endif %}</div>
+        <div class="staff-info">
+          <div class="staff-name">{{ m.name }}</div>
+          <div class="staff-detail">{{ m.department }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.articles %}
+    <div class="dept-heading"><h3>Articles</h3><span class="line"></span></div>
+    <div class="articles-grid" style="margin-bottom:2rem">
+      {% for a in results.articles %}
+      <a href="{{ url_for('article_detail', article_id=a.id) }}" class="article-card">
+        <div class="article-body">
+          <div class="article-cat">{{ a.category }}</div>
+          <div class="article-title">{{ a.title }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.gallery %}
+    <div class="dept-heading"><h3>Gallery</h3><span class="line"></span></div>
+    <div class="gallery-grid">
+      {% for p in results.gallery %}
+      <div class="gallery-item" data-lightbox="{{ p.data_url }}"><img src="{{ p.data_url }}" loading="lazy"></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if total == 0 %}
+    <div class="empty-state"><i class="fas fa-search"></i><p>No results found for "{{ q }}"</p></div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state"><i class="fas fa-search"></i><p>Type something above to search the whole yearbook.</p></div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.js-avatar').forEach(el => { el.outerHTML = avatarHTML(el.dataset.name, 190); });
+</script>
+{% endblock %}
