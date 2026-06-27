@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% set active = 'dashboard' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block admin_content %}
+
+<div class="admin-header">
+  <div>
+    <h1>Welcome back</h1>
+    <p>Manage every part of the {{ settings.school_name }} yearbook from here.</p>
+  </div>
+</div>
+
+<div class="admin-stats">
+  <div class="admin-stat"><div class="num">{{ student_count }}</div><div class="lbl">Students</div></div>
+  <div class="admin-stat"><div class="num">{{ photos_done }}</div><div class="lbl">Students With Photos</div></div>
+  <div class="admin-stat"><div class="num">{{ staff_count }}</div><div class="lbl">Staff Members</div></div>
+  <div class="admin-stat"><div class="num">{{ article_count }}</div><div class="lbl">Articles</div></div>
+  <div class="admin-stat"><div class="num">{{ gallery_count }}</div><div class="lbl">Gallery Photos</div></div>
+</div>
+
+<div class="admin-card">
+  <h3>Quick Actions</h3>
+  <div class="admin-quicklinks">
+    <a href="{{ url_for('admin_students') }}" class="admin-qlink"><i class="fas fa-file-excel"></i><div><div class="t">Import Students</div><div class="s">Upload a class Excel file</div></div></a>
+    <a href="{{ url_for('admin_students') }}" class="admin-qlink"><i class="fas fa-camera"></i><div><div class="t">Upload Photos</div><div class="s">Add student pictures</div></div></a>
+    <a href="{{ url_for('admin_staff') }}" class="admin-qlink"><i class="fas fa-chalkboard-teacher"></i><div><div class="t">Add Staff</div><div class="s">Teaching &amp; non-teaching</div></div></a>
+    <a href="{{ url_for('admin_articles') }}" class="admin-qlink"><i class="fas fa-feather-alt"></i><div><div class="t">Write Article</div><div class="s">Publish a write-up</div></div></a>
+    <a href="{{ url_for('admin_gallery') }}" class="admin-qlink"><i class="fas fa-images"></i><div><div class="t">Upload Gallery Photos</div><div class="s">Events, sports, excursions</div></div></a>
+    <a href="{{ url_for('admin_settings') }}" class="admin-qlink"><i class="fas fa-cog"></i><div><div class="t">Yearbook Settings</div><div class="s">Logo, motto, theme</div></div></a>
+  </div>
+</div>
+
+{% if classes_rows %}
+<div class="admin-card">
+  <h3>Classes</h3>
+  <table class="admin-table">
+    <thead><tr><th>Class</th><th></th></tr></thead>
+    <tbody>
+      {% for c in classes_rows %}
+      <tr><td>{{ c['class_name'] }}</td><td><a href="{{ url_for('admin_students', class=c['class_name']) }}" class="btn-sm ghost">Manage</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="admin-card" style="background:rgba(201,168,76,.06);border:1px dashed var(--accent)">
+  <h3 style="display:flex;align-items:center;gap:.5rem"><i class="fas fa-shield-alt" style="color:var(--accent-dim)"></i> A note on this page</h3>
+  <p style="font-size:.85rem;color:var(--muted);line-height:1.6">
+    This admin area is intentionally not linked from anywhere on the public-facing yearbook —
+    students and visitors will never stumble onto it through normal browsing. Bookmark this URL for yourself and other admins.
+  </p>
+</div>
+
+{% endblock %}

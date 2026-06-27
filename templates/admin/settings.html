@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% set active = 'settings' %}
+{% block title %}Yearbook Settings{% endblock %}
+{% block admin_content %}
+
+<div class="admin-header">
+  <div>
+    <h1>Yearbook Settings</h1>
+    <p>School name, motto, graduation year, and logo.</p>
+  </div>
+</div>
+
+<div class="admin-card" style="max-width:560px">
+  <form id="settingsForm">
+    <div class="form-row"><label>School Name</label><input type="text" name="school_name" value="{{ settings.school_name }}"></div>
+    <div class="form-row"><label>Motto</label><textarea name="motto" rows="2">{{ settings.motto }}</textarea></div>
+    <div class="form-row"><label>Graduation Year</label><input type="text" name="graduation_year" value="{{ settings.graduation_year }}"></div>
+    <div class="form-row"><label>Principal's Welcome Message</label><textarea name="principal_message" rows="4">{{ settings.principal_message }}</textarea></div>
+    <div class="form-row">
+      <label>School Logo</label>
+      <div class="drop-zone-sm" id="logoDropZone"><i class="fas fa-image"></i><p id="logoLabel">Click or drop a logo image</p><input type="file" id="logoFileInput" accept="image/*"></div>
+    </div>
+    <button type="submit" class="btn-sm gold"><i class="fas fa-check"></i> Save Settings</button>
+  </form>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let logoFile = null;
+setupDropZone('logoDropZone', 'logoFileInput', f => {
+  logoFile = f[0];
+  document.getElementById('logoLabel').textContent = logoFile.name;
+});
+
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  if (logoFile) fd.append('logo', logoFile);
+  const result = await postForm('{{ url_for("admin_update_settings") }}', fd);
+  if (result.ok) showToast('Settings saved', 'ok');
+  else showToast(result.error || 'Failed', 'err');
+});
+</script>
+{% endblock %}

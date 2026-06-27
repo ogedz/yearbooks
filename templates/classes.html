@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% set active_page = 'classes' %}
+{% block title %}Our Classes — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+  <div class="eyebrow">Class of {{ settings.graduation_year }}</div>
+  <h1>Choose Your Class</h1>
+  <p>Pick a class to meet the graduating stars within it</p>
+</section>
+
+<div class="section-wrap">
+  {% if class_rows %}
+  <div class="class-grid">
+    {% for row in class_rows %}
+    <a href="{{ url_for('class_students', class_name=row['class_name']) }}" class="class-card">
+      <div class="seal"><span class="seal-mark">{{ row['class_name'][:2]|upper }}</span></div>
+      <h3>{{ row['class_name'] }}</h3>
+      <p>{{ row['c'] }} student{{ 's' if row['c'] != 1 else '' }}</p>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-school"></i>
+    <p>No classes have been added yet.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

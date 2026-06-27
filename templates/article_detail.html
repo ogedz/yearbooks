@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set active_page = 'articles' %}
+{% block title %}{{ a.title }} — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<div class="article-detail-body">
+  <a href="{{ url_for('articles') }}" class="back-link"><i class="fas fa-arrow-left"></i> All Articles</a>
+  {% if a.cover_image %}<img src="{{ a.cover_image }}" alt="{{ a.title }}">{% endif %}
+  <div class="article-cat" style="margin-bottom:.5rem">{{ a.category }}</div>
+  <h1 style="font-size:clamp(1.6rem,4vw,2.4rem);color:var(--primary);font-weight:800;margin-bottom:.4rem">{{ a.title }}</h1>
+  {% if a.author %}<p style="color:var(--muted);margin-bottom:1.8rem">By {{ a.author }}</p>{% endif %}
+  <div class="content">
+    {% for para in a.content.split('\n') %}
+      {% if para.strip() %}<p>{{ para }}</p>{% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

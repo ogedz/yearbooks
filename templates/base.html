@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>{% block title %}{{ settings.school_name }} — Class of {{ settings.graduation_year }}{% endblock %}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800;9..144,900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav id="siteNav">
+  <div class="nav-inner">
+    <a href="{{ url_for('home') }}" class="nav-brand">
+      <div class="seal"><span class="seal-mark">U</span></div>
+      <span>UMIC '{{ settings.graduation_year[-2:] if settings.graduation_year else '26' }}</span>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('home') }}" class="nav-link {{ 'active' if active_page=='home' else '' }}">Home</a>
+      <a href="{{ url_for('leadership') }}" class="nav-link {{ 'active' if active_page=='leadership' else '' }}">Leadership</a>
+      <a href="{{ url_for('staff') }}" class="nav-link {{ 'active' if active_page=='staff' else '' }}">Staff</a>
+      <a href="{{ url_for('classes') }}" class="nav-link {{ 'active' if active_page=='classes' else '' }}">Students</a>
+      <a href="{{ url_for('articles') }}" class="nav-link {{ 'active' if active_page=='articles' else '' }}">Articles</a>
+      <a href="{{ url_for('gallery') }}" class="nav-link {{ 'active' if active_page=='gallery' else '' }}">Gallery</a>
+    </div>
+    <form class="nav-search" action="{{ url_for('search') }}" method="get" id="navSearchForm">
+      <i class="fas fa-search"></i>
+      <input type="text" name="q" placeholder="Search...">
+    </form>
+    <button id="mobileMenuBtn" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<div id="mobileDrawer">
+  <button class="drawer-close" aria-label="Close menu"><i class="fas fa-times"></i></button>
+  <form action="{{ url_for('search') }}" method="get" style="display:flex;align-items:center;background:rgba(255,255,255,.08);border-radius:50px;padding:.6rem 1rem;gap:.5rem;margin-bottom:1.5rem">
+    <i class="fas fa-search" style="color:rgba(255,255,255,.45)"></i>
+    <input type="text" name="q" placeholder="Search everything..." style="background:none;border:none;color:#fff;font-size:.92rem;flex:1;outline:none;font-family:var(--sans)">
+  </form>
+  <a href="{{ url_for('home') }}">Home</a>
+  <a href="{{ url_for('leadership') }}">Leadership</a>
+  <a href="{{ url_for('staff') }}">Staff</a>
+  <a href="{{ url_for('classes') }}">Students</a>
+  <a href="{{ url_for('articles') }}">Articles</a>
+  <a href="{{ url_for('gallery') }}">Gallery</a>
+</div>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <p class="fq">"{{ settings.motto }}"</p>
+  <p>{{ settings.school_name }} — Class of {{ settings.graduation_year }} Yearbook</p>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose"><i class="fas fa-times"></i></button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<div id="toastHost"></div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

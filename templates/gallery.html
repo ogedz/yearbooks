@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set active_page = 'gallery' %}
+{% block title %}Photo Gallery — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+  <div class="eyebrow">Captured Forever</div>
+  <h1>Photo Gallery</h1>
+  <p>Moments frozen in time</p>
+</section>
+
+<div class="section-wrap">
+  <div class="tab-row" style="justify-content:center;margin-bottom:1.5rem">
+    <a href="{{ url_for('gallery') }}" class="tab {{ 'active' if active_cat=='All' else '' }}">All</a>
+    {% for c in categories %}
+    <a href="{{ url_for('gallery', category=c['category']) }}" class="tab {{ 'active' if active_cat==c['category'] else '' }}">{{ c['category'] }}</a>
+    {% endfor %}
+  </div>
+
+  {% if photos %}
+  <div class="gallery-grid">
+    {% for p in photos %}
+    <div class="gallery-item" data-lightbox="{{ p.data_url }}">
+      <img src="{{ p.data_url }}" alt="{{ p.caption }}" loading="lazy">
+      {% if p.caption %}<div class="g-overlay"><span class="g-caption">{{ p.caption }}</span></div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-images"></i><p>No photos in this category yet.</p></div>
+  {% endif %}
+</div>
+
+{% endblock %}

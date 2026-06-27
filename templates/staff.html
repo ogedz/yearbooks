@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% set active_page = 'staff' %}
+{% block title %}Our Staff — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+  <div class="eyebrow">The People Behind the Lessons</div>
+  <h1>Our Dedicated Staff</h1>
+  <p>The mentors who shaped our journey</p>
+</section>
+
+<div class="section-wrap">
+  <div class="category-toggle">
+    <button class="tab active" data-cat="Teaching">Teaching Staff</button>
+    <button class="tab" data-cat="Non-Teaching">Non-Teaching Staff</button>
+  </div>
+
+  {% for category, depts in departments.items() %}
+  <div class="staff-category" data-category="{{ category }}" style="{{ '' if category == 'Teaching' else 'display:none' }}">
+    {% for dept, members in depts.items() %}
+    <div class="dept-heading"><h3>{{ dept }}</h3><span class="line"></span></div>
+    <div class="staff-grid">
+      {% for m in members %}
+      <div class="staff-card">
+        <div class="staff-photo">
+          {% if m.photo %}<img src="{{ m.photo }}" alt="{{ m.name }}">{% else %}<span class="js-avatar" data-name="{{ m.name }}"></span>{% endif %}
+        </div>
+        <div class="staff-info">
+          <div class="staff-name">{{ m.name }}</div>
+          {% if m.subject %}<div class="staff-detail"><i class="fas fa-book"></i>{{ m.subject }}</div>{% endif %}
+          {% if m.phone %}<div class="staff-detail"><i class="fas fa-phone"></i>{{ m.phone }}</div>{% endif %}
+          {% if m.years_of_service %}<div class="staff-detail"><i class="fas fa-calendar"></i>{{ m.years_of_service }} yrs of service</div>{% endif %}
+          {% if m.quote %}<div class="staff-detail" style="font-style:italic;margin-top:.4rem">"{{ m.quote }}"</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><p>No staff members added yet.</p></div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.js-avatar').forEach(el => { el.outerHTML = avatarHTML(el.dataset.name, 190); });
+
+document.querySelectorAll('.category-toggle .tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.category-toggle .tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.staff-category').forEach(sec => {
+      sec.style.display = sec.dataset.category === cat ? '' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}

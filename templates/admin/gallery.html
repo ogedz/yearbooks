@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+{% set active = 'gallery' %}
+{% block title %}Manage Gallery{% endblock %}
+{% block admin_content %}
+
+<div class="admin-header">
+  <div>
+    <h1>Photo Gallery</h1>
+    <p>Events, classroom moments, sports, excursions, and candid shots.</p>
+  </div>
+</div>
+
+<div class="admin-card">
+  <h3>Upload Photos</h3>
+  <div class="form-grid-2" style="margin-bottom:1rem">
+    <div class="form-row"><label>Caption (optional, applies to all uploaded in this batch)</label><input type="text" id="galCaption" placeholder="e.g. Inter-house Sports Day"></div>
+    <div class="form-row"><label>Category</label>
+      <select id="galCategory">
+        <option>Events</option><option>Classroom</option><option>Sports</option><option>Excursions</option><option>Candid</option><option>Cultural Day</option><option>Graduation</option>
+      </select>
+    </div>
+  </div>
+  <div class="drop-zone-sm" id="galDropZone">
+    <i class="fas fa-images"></i><p id="galDropLabel">Click or drop multiple photos here</p>
+    <input type="file" id="galFileInput" accept="image/*" multiple>
+  </div>
+</div>
+
+<div class="admin-card">
+  <h3>{{ photos|length }} photo{{ 's' if photos|length != 1 else '' }}</h3>
+  {% if photos %}
+  <div class="photo-mini-grid">
+    {% for p in photos %}
+    <div class="photo-mini">
+      <img src="{{ p.data_url }}" loading="lazy">
+      <div class="mini-actions">
+        <button onclick="deleteGalleryPhoto({{ p.id }})" title="Delete"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-images"></i><p>No gallery photos uploaded yet.</p></div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+setupDropZone('galDropZone', 'galFileInput', async (files) => {
+  const fd = new FormData();
+  fd.append('caption', document.getElementById('galCaption').value);
+  fd.append('category', document.getElementById('galCategory').value);
+  for (const f of files) fd.append('photos', f);
+  showToast('Uploading...', 'info');
+  const result = await postForm('{{ url_for("admin_upload_gallery") }}', fd);
+  if (result.ok) { showToast(`Added ${result.added} photo(s)`, 'ok'); setTimeout(() => location.reload(), 900); }
+  else showToast(result.error || 'Upload failed', 'err');
+});
+
+async function deleteGalleryPhoto(id) {
+  if (!confirmAction('Delete this photo?')) return;
+  const result = await postJSON(`/admin/gallery/${id}/delete`, {});
+  if (result.ok) { showToast('Deleted', 'ok'); setTimeout(() => location.reload(), 700); }
+}
+</script>
+{% endblock %}

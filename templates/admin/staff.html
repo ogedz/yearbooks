@@ -1,0 +1,146 @@
+{% extends "admin/base.html" %}
+{% set active = 'staff' %}
+{% block title %}Manage Staff{% endblock %}
+{% block admin_content %}
+
+<div class="admin-header">
+  <div>
+    <h1>Staff</h1>
+    <p>Teaching and non-teaching staff, organized by department.</p>
+  </div>
+  <div style="display:flex;gap:.6rem">
+    <button class="btn-sm ghost" onclick="openModal('importStaffModal')"><i class="fas fa-file-excel"></i> Import Excel</button>
+    <button class="btn-sm gold" onclick="openModal('addStaffModal')"><i class="fas fa-plus"></i> Add Staff</button>
+  </div>
+</div>
+
+<div class="admin-card">
+  <h3>{{ staff|length }} staff member{{ 's' if staff|length != 1 else '' }}</h3>
+  {% if staff %}
+  <table class="admin-table">
+    <thead><tr><th></th><th>Name</th><th>Department</th><th>Subject</th><th>Phone</th><th>Category</th><th></th></tr></thead>
+    <tbody>
+      {% for m in staff %}
+      <tr>
+        <td>{% if m.photo %}<img src="{{ m.photo }}" class="admin-thumb">{% else %}<div class="admin-thumb js-avatar" data-name="{{ m.name }}"></div>{% endif %}</td>
+        <td>{{ m.name }}</td>
+        <td>{{ m.department or '—' }}</td>
+        <td>{{ m.subject or '—' }}</td>
+        <td>{{ m.phone or '—' }}</td>
+        <td><span class="admin-pill {{ 'ok' if m.category=='Teaching' else 'warn' }}">{{ m.category }}</span></td>
+        <td style="white-space:nowrap">
+          <button class="row-action edit" onclick="document.getElementById('staffPhotoInput_{{ m.id }}').click()" title="Upload photo"><i class="fas fa-camera"></i></button>
+          <input type="file" id="staffPhotoInput_{{ m.id }}" accept="image/*" style="display:none" onchange="uploadStaffPhoto({{ m.id }}, this.files[0])">
+          <button class="row-action" onclick="deleteStaff({{ m.id }}, {{ m.name|tojson }})" title="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><p>No staff added yet.</p></div>
+  {% endif %}
+</div>
+
+<!-- Add Staff Modal -->
+<div class="modal-bg" id="addStaffModal">
+  <div class="modal-box-sm">
+    <h3>Add Staff Member</h3>
+    <form id="addStaffForm">
+      <div class="form-row"><label>Full Name</label><input type="text" name="name" required></div>
+      <div class="form-grid-2">
+        <div class="form-row"><label>Department</label><input type="text" name="department" placeholder="e.g. Science"></div>
+        <div class="form-row"><label>Subject Taught</label><input type="text" name="subject"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row"><label>Phone Number</label><input type="tel" name="phone"></div>
+        <div class="form-row"><label>Category</label>
+          <select name="category"><option value="Teaching">Teaching</option><option value="Non-Teaching">Non-Teaching</option></select>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row"><label>Years of Service</label><input type="text" name="years_of_service"></div>
+        <div class="form-row"><label>Favorite Quote</label><input type="text" name="quote"></div>
+      </div>
+      <div class="form-row">
+        <label>Photo (optional)</label>
+        <div class="drop-zone-sm" id="staffPhotoDropZone">
+          <i class="fas fa-camera"></i><p id="staffPhotoLabel">Click or drop a photo</p>
+          <input type="file" id="staffPhotoFileInput" accept="image/*">
+        </div>
+      </div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem">
+        <button type="button" class="btn-sm ghost" onclick="closeModal('addStaffModal')">Cancel</button>
+        <button type="submit" class="btn-sm gold"><i class="fas fa-check"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Import Staff Modal -->
+<div class="modal-bg" id="importStaffModal">
+  <div class="modal-box-sm">
+    <h3>Import Staff Excel</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem">Columns: Name, Department, Subject, Phone, Type (Teaching/Non-Teaching)</p>
+    <div class="drop-zone-sm" id="importStaffDropZone">
+      <i class="fas fa-file-excel"></i><p id="importStaffLabel">Click or drop .xlsx file here</p>
+      <input type="file" id="importStaffFileInput" accept=".xlsx,.xls">
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem">
+      <button type="button" class="btn-sm ghost" onclick="closeModal('importStaffModal')">Cancel</button>
+      <button type="button" class="btn-sm gold" id="importStaffBtn" onclick="submitStaffImport()"><i class="fas fa-upload"></i> Import</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.js-avatar').forEach(el => { el.outerHTML = avatarHTML(el.dataset.name, 42); });
+
+let staffPhotoFile = null;
+setupDropZone('staffPhotoDropZone', 'staffPhotoFileInput', f => {
+  staffPhotoFile = f[0];
+  document.getElementById('staffPhotoLabel').textContent = staffPhotoFile.name;
+});
+
+document.getElementById('addStaffForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  if (staffPhotoFile) fd.append('photo', staffPhotoFile);
+  const result = await postForm('{{ url_for("admin_add_staff") }}', fd);
+  if (result.ok) { showToast('Staff member added', 'ok'); setTimeout(() => location.reload(), 800); }
+  else showToast(result.error || 'Failed to add staff', 'err');
+});
+
+let importStaffFile = null;
+setupDropZone('importStaffDropZone', 'importStaffFileInput', f => {
+  importStaffFile = f[0];
+  document.getElementById('importStaffLabel').textContent = importStaffFile.name;
+});
+
+async function submitStaffImport() {
+  if (!importStaffFile) { showToast('Choose a file first', 'err'); return; }
+  const fd = new FormData();
+  fd.append('file', importStaffFile);
+  const result = await postForm('{{ url_for("admin_import_staff") }}', fd);
+  if (result.ok) { showToast(`Imported ${result.added} staff members`, 'ok'); setTimeout(() => location.reload(), 1000); }
+  else showToast(result.error || 'Import failed', 'err');
+}
+
+async function uploadStaffPhoto(staffId, file) {
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('photo', file);
+  const result = await postForm(`/admin/staff/${staffId}/photo`, fd);
+  if (result.ok) { showToast('Photo updated', 'ok'); setTimeout(() => location.reload(), 700); }
+}
+
+async function deleteStaff(id, name) {
+  if (!confirmAction(`Delete ${name}?`)) return;
+  const result = await postJSON(`/admin/staff/${id}/delete`, {});
+  if (result.ok) { showToast('Staff member deleted', 'ok'); setTimeout(() => location.reload(), 700); }
+}
+</script>
+{% endblock %}

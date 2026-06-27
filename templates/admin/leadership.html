@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% set active = 'leadership' %}
+{% block title %}Manage Leadership{% endblock %}
+{% block admin_content %}
+
+<div class="admin-header">
+  <div>
+    <h1>School Leadership</h1>
+    <p>Principal, Vice Principals, Secretaries and other management profiles.</p>
+  </div>
+  <button class="btn-sm gold" onclick="openModal('addLeaderModal')"><i class="fas fa-plus"></i> Add Leader</button>
+</div>
+
+<div class="admin-card">
+  {% if leaders %}
+  <table class="admin-table">
+    <thead><tr><th></th><th>Name</th><th>Title</th><th>Message</th><th></th></tr></thead>
+    <tbody>
+      {% for l in leaders %}
+      <tr>
+        <td>{% if l.photo %}<img src="{{ l.photo }}" class="admin-thumb">{% else %}<div class="admin-thumb js-avatar" data-name="{{ l.name }}"></div>{% endif %}</td>
+        <td>{{ l.name }}</td>
+        <td><span class="admin-pill">{{ l.title }}</span></td>
+        <td style="max-width:280px;color:var(--muted);font-size:.82rem">{{ l.message[:80] }}{{ '...' if l.message and l.message|length > 80 else '' }}</td>
+        <td><button class="row-action" onclick="deleteLeader({{ l.id }}, {{ l.name|tojson }})"><i class="fas fa-trash"></i></button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-user-tie"></i><p>No leadership profiles yet. Add the Principal, VPs, and Secretaries.</p></div>
+  {% endif %}
+</div>
+
+<div class="modal-bg" id="addLeaderModal">
+  <div class="modal-box-sm">
+    <h3>Add Leadership Profile</h3>
+    <form id="addLeaderForm">
+      <div class="form-row"><label>Full Name</label><input type="text" name="name" required></div>
+      <div class="form-row">
+        <label>Title</label>
+        <select name="title">
+          <option>Principal</option><option>Vice Principal Academics</option><option>Vice Principal Administration</option>
+          <option>Secretary</option><option>Bursar</option><option>Admin Officer</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Message to Graduating Class</label><textarea name="message" rows="4"></textarea></div>
+      <div class="form-row">
+        <label>Photo</label>
+        <div class="drop-zone-sm" id="leaderPhotoDropZone"><i class="fas fa-camera"></i><p id="leaderPhotoLabel">Click or drop a photo</p><input type="file" id="leaderPhotoFileInput" accept="image/*"></div>
+      </div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem">
+        <button type="button" class="btn-sm ghost" onclick="closeModal('addLeaderModal')">Cancel</button>
+        <button type="submit" class="btn-sm gold"><i class="fas fa-check"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.js-avatar').forEach(el => { el.outerHTML = avatarHTML(el.dataset.name, 42); });
+
+let leaderPhotoFile = null;
+setupDropZone('leaderPhotoDropZone', 'leaderPhotoFileInput', f => {
+  leaderPhotoFile = f[0];
+  document.getElementById('leaderPhotoLabel').textContent = leaderPhotoFile.name;
+});
+
+document.getElementById('addLeaderForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  if (leaderPhotoFile) fd.append('photo', leaderPhotoFile);
+  const result = await postForm('{{ url_for("admin_add_leader") }}', fd);
+  if (result.ok) { showToast('Leader added', 'ok'); setTimeout(() => location.reload(), 800); }
+  else showToast(result.error || 'Failed', 'err');
+});
+
+async function deleteLeader(id, name) {
+  if (!confirmAction(`Delete ${name}?`)) return;
+  const result = await postJSON(`/admin/leadership/${id}/delete`, {});
+  if (result.ok) { showToast('Deleted', 'ok'); setTimeout(() => location.reload(), 700); }
+}
+</script>
+{% endblock %}

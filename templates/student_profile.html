@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% set active_page = 'classes' %}
+{% block title %}{{ s.full_name }} — {{ settings.school_name }}{% endblock %}
+{% block content %}
+
+<section class="profile-hero">
+  <div style="max-width:560px;margin:0 auto 0;text-align:center">
+    <a href="{{ url_for('class_students', class_name=s.class_name) }}" style="color:var(--accent);font-size:.85rem;font-weight:600;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1rem">
+      <i class="fas fa-arrow-left"></i> Back to {{ s.class_name }}
+    </a>
+  </div>
+  <div class="profile-gallery">
+    {% if photos and photos|length > 0 %}
+    <div class="profile-gallery-track" id="galleryTrack">
+      {% for p in photos %}
+      <img src="{{ p.data_url }}" alt="{{ s.full_name }} photo {{ loop.index }}" data-lightbox="{{ p.data_url }}">
+      {% endfor %}
+    </div>
+    {% if photos|length > 1 %}
+    <div class="profile-gallery-dots">
+      {% for p in photos %}<span class="{{ 'active' if loop.first else '' }}"></span>{% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a4536,#0A2F23)">
+      <span class="js-avatar-big" data-name="{{ s.full_name }}"></span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="profile-card">
+  <h1 class="profile-name">{{ s.full_name }}</h1>
+  {% if s.nickname %}<p class="profile-nick">"{{ s.nickname }}"</p>{% endif %}
+
+  <div class="profile-tags">
+    <span class="profile-tag">{{ s.class_name }}</span>
+    {% if s.post_held %}<span class="profile-tag wine">{{ s.post_held }}</span>{% endif %}
+  </div>
+
+  {% if s.favourite_quote %}
+  <div class="profile-quote"><i class="fas fa-quote-left" style="color:var(--accent);margin-right:.4rem;opacity:.6"></i>{{ s.favourite_quote }}</div>
+  {% endif %}
+
+  {% if s.parting_words %}
+  <div class="profile-quote" style="border-color:var(--wine);background:rgba(124,29,62,.05)">
+    <strong style="color:var(--wine);display:block;font-style:normal;font-size:.78rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem">Parting Words</strong>
+    {{ s.parting_words }}
+  </div>
+  {% endif %}
+
+  <!-- About -->
+  <div class="profile-section">
+    <div class="profile-section-title">About Me</div>
+    <div class="profile-grid">
+      {% if s.future_ambition %}<div class="profile-field"><div class="profile-field-label">Future Ambition</div><div class="profile-field-value">{{ s.future_ambition }}</div></div>{% endif %}
+      {% if s.favourite_subject %}<div class="profile-field"><div class="profile-field-label">Favourite Subject</div><div class="profile-field-value">{{ s.favourite_subject }}</div></div>{% endif %}
+      {% if s.toughest_subject %}<div class="profile-field"><div class="profile-field-label">Toughest Subject</div><div class="profile-field-value">{{ s.toughest_subject }}</div></div>{% endif %}
+      {% if s.hobbies %}<div class="profile-field"><div class="profile-field-label">Hobbies</div><div class="profile-field-value">{{ s.hobbies }}</div></div>{% endif %}
+      {% if s.role_model %}<div class="profile-field"><div class="profile-field-label">Role Model</div><div class="profile-field-value">{{ s.role_model }}</div></div>{% endif %}
+      {% if s.favourite_colour %}<div class="profile-field"><div class="profile-field-label">Favourite Colour</div><div class="profile-field-value">{{ s.favourite_colour }}</div></div>{% endif %}
+      {% if s.favourite_food %}<div class="profile-field"><div class="profile-field-label">Favourite Food</div><div class="profile-field-value">{{ s.favourite_food }}</div></div>{% endif %}
+      {% if s.favourite_fruit %}<div class="profile-field"><div class="profile-field-label">Favourite Fruit</div><div class="profile-field-value">{{ s.favourite_fruit }}</div></div>{% endif %}
+      {% if s.movie_type %}<div class="profile-field"><div class="profile-field-label">Favourite Movies</div><div class="profile-field-value">{{ s.movie_type }}</div></div>{% endif %}
+      {% if s.best_artist %}<div class="profile-field"><div class="profile-field-label">Best Artist</div><div class="profile-field-value">{{ s.best_artist }}</div></div>{% endif %}
+      {% if s.best_slang %}<div class="profile-field"><div class="profile-field-label">Best Slang</div><div class="profile-field-value">{{ s.best_slang }}</div></div>{% endif %}
+      {% if s.notable_phobia %}<div class="profile-field"><div class="profile-field-label">Notable Phobia</div><div class="profile-field-value">{{ s.notable_phobia }}</div></div>{% endif %}
+    </div>
+  </div>
+
+  <!-- People -->
+  <div class="profile-section">
+    <div class="profile-section-title">People</div>
+    <div class="profile-grid">
+      {% if s.best_friends %}<div class="profile-field"><div class="profile-field-label">Best Friend(s)</div><div class="profile-field-value">{{ s.best_friends }}</div></div>{% endif %}
+      {% if s.day_one_friend %}<div class="profile-field"><div class="profile-field-label">Day One Friend</div><div class="profile-field-value">{{ s.day_one_friend }}</div></div>{% endif %}
+      {% if s.best_seat_partner %}<div class="profile-field"><div class="profile-field-label">Best Seat Partner</div><div class="profile-field-value">{{ s.best_seat_partner }}</div></div>{% endif %}
+      {% if s.most_admired_classmate %}<div class="profile-field"><div class="profile-field-label">Most Admired Classmate</div><div class="profile-field-value">{{ s.most_admired_classmate }}</div></div>{% endif %}
+      {% if s.class_crush %}<div class="profile-field"><div class="profile-field-label">Class Crush</div><div class="profile-field-value">{{ s.class_crush }}</div></div>{% endif %}
+      {% if s.folks_never_forget %}<div class="profile-field"><div class="profile-field-label">Folks Never to Forget</div><div class="profile-field-value">{{ s.folks_never_forget }}</div></div>{% endif %}
+      {% if s.favourite_teacher %}<div class="profile-field"><div class="profile-field-label">Favourite Teacher(s)</div><div class="profile-field-value">{{ s.favourite_teacher }}</div></div>{% endif %}
+      {% if s.most_admired_teacher %}<div class="profile-field"><div class="profile-field-label">Most Admired Teacher</div><div class="profile-field-value">{{ s.most_admired_teacher }}</div></div>{% endif %}
+      {% if s.favourite_non_teaching %}<div class="profile-field"><div class="profile-field-label">Favourite Non-Teaching Staff</div><div class="profile-field-value">{{ s.favourite_non_teaching }}</div></div>{% endif %}
+      {% if s.teachers_missed %}<div class="profile-field"><div class="profile-field-label">Teachers Missed</div><div class="profile-field-value">{{ s.teachers_missed }}</div></div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Moments -->
+  <div class="profile-section">
+    <div class="profile-section-title">Moments &amp; Memories</div>
+    <div class="profile-grid">
+      {% if s.best_moment %}<div class="profile-field"><div class="profile-field-label">Best Moment</div><div class="profile-field-value">{{ s.best_moment }}</div></div>{% endif %}
+      {% if s.embarrassing_moment %}<div class="profile-field"><div class="profile-field-label">Most Embarrassing Moment</div><div class="profile-field-value">{{ s.embarrassing_moment }}</div></div>{% endif %}
+      {% if s.weird_moment %}<div class="profile-field"><div class="profile-field-label">Weird Moment</div><div class="profile-field-value">{{ s.weird_moment }}</div></div>{% endif %}
+      {% if s.worst_moment %}<div class="profile-field"><div class="profile-field-label">Worst Moment</div><div class="profile-field-value">{{ s.worst_moment }}</div></div>{% endif %}
+      {% if s.class_enjoyed_most %}<div class="profile-field"><div class="profile-field-label">Class Enjoyed Most</div><div class="profile-field-value">{{ s.class_enjoyed_most }}</div></div>{% endif %}
+      {% if s.never_forget %}<div class="profile-field"><div class="profile-field-label">Will Never Forget About This Set</div><div class="profile-field-value">{{ s.never_forget }}</div></div>{% endif %}
+      {% if s.better_than_thought %}<div class="profile-field"><div class="profile-field-label">Better Than I Thought</div><div class="profile-field-value">{{ s.better_than_thought }}</div></div>{% endif %}
+      {% if s.never_miss %}<div class="profile-field"><div class="profile-field-label">Will Never Miss</div><div class="profile-field-value">{{ s.never_miss }}</div></div>{% endif %}
+      {% if s.secretly_miss %}<div class="profile-field"><div class="profile-field-label">Will Secretly Miss</div><div class="profile-field-value">{{ s.secretly_miss }}</div></div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Reflections -->
+  <div class="profile-section">
+    <div class="profile-section-title">Looking Back, Looking Forward</div>
+    {% if s.impact_of_umic %}<div class="profile-field" style="margin-bottom:.6rem"><div class="profile-field-label">Impact of UMIC</div><div class="profile-field-value">{{ s.impact_of_umic }}</div></div>{% endif %}
+    {% if s.journey_description %}<div class="profile-field" style="margin-bottom:.6rem"><div class="profile-field-label">My Journey Through UMIC, In One Sentence</div><div class="profile-field-value">{{ s.journey_description }}</div></div>{% endif %}
+    {% if s.advice_to_future %}<div class="profile-field" style="margin-bottom:.6rem"><div class="profile-field-label">Advice to My Future Self</div><div class="profile-field-value">{{ s.advice_to_future }}</div></div>{% endif %}
+    {% if s.wish %}<div class="profile-field" style="margin-bottom:.6rem"><div class="profile-field-label">I Wish I Could...</div><div class="profile-field-value">{{ s.wish }}</div></div>{% endif %}
+    {% if s.dreamland %}<div class="profile-field" style="margin-bottom:.6rem"><div class="profile-field-label">Dreamland</div><div class="profile-field-value">{{ s.dreamland }}</div></div>{% endif %}
+    {% if s.people_to_meet %}<div class="profile-field"><div class="profile-field-label">People to Meet in the Future</div><div class="profile-field-value">{{ s.people_to_meet }}</div></div>{% endif %}
+  </div>
+
+  <!-- Background -->
+  <div class="profile-section">
+    <div class="profile-section-title">Background</div>
+    <div class="profile-grid">
+      {% if s.state_of_origin %}<div class="profile-field"><div class="profile-field-label">State of Origin</div><div class="profile-field-value">{{ s.state_of_origin }}</div></div>{% endif %}
+      {% if s.home_town %}<div class="profile-field"><div class="profile-field-label">Home Town</div><div class="profile-field-value">{{ s.home_town }}</div></div>{% endif %}
+      {% if s.religion %}<div class="profile-field"><div class="profile-field-label">Religion</div><div class="profile-field-value">{{ s.religion }}</div></div>{% endif %}
+      {% if s.mode_of_schooling %}<div class="profile-field"><div class="profile-field-label">Mode of Schooling</div><div class="profile-field-value">{{ s.mode_of_schooling }}</div></div>{% endif %}
+      {% if s.year_of_admission %}<div class="profile-field"><div class="profile-field-label">Year of Admission</div><div class="profile-field-value">{{ s.year_of_admission }}</div></div>{% endif %}
+      {% if s.social_media %}<div class="profile-field"><div class="profile-field-label">Social Media</div><div class="profile-field-value">{{ s.social_media }}</div></div>{% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const bigAvatar = document.querySelector('.js-avatar-big');
+if (bigAvatar) bigAvatar.outerHTML = avatarHTML(bigAvatar.dataset.name, 130);
+</script>
+{% endblock %}
