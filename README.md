@@ -51,14 +51,26 @@ This app needs a **persistent disk** for `yearbook.db` — without one, every de
 restart wipes the database, since the container filesystem is otherwise ephemeral.
 
 ### Render
+
+This repo includes a `render.yaml` Blueprint that captures the full setup below
+(build/start commands, the `URL_PREFIX` and `DATA_DIR` environment variables, and a
+persistent disk) so you don't have to enter them by hand.
+
+**Using the Blueprint (recommended):** Render dashboard → New → Blueprint → connect
+this repo. Render reads `render.yaml` automatically and provisions everything —
+review the plan it shows you, then click Apply. Skip the manual steps below.
+
+**Manual setup (if you'd rather not use the Blueprint, or already created the service
+by hand):**
 1. New → Web Service → connect this repo.
 2. Build command: `pip install -r requirements.txt`
 3. Start command: leave blank (Render reads the `Procfile`) or set explicitly to
    `gunicorn app:app --bind 0.0.0.0:$PORT`
-4. Add a **Disk** (Render dashboard → your service → Disks): mount path `/app` (or
-   wherever your repo root lands), at least 1 GB. This is what keeps `yearbook.db`
-   across deploys.
-5. Deploy. First request will auto-create the database tables.
+4. Add a **Disk** (Render dashboard → your service → Disks): mount path `/app/data`,
+   at least 1 GB.
+5. Add environment variables: `DATA_DIR` = `/app/data` (must match the disk's mount
+   path exactly), and `URL_PREFIX` = `/yearbook` if running under a subpath (see below).
+6. Deploy. First request will auto-create the database tables on the mounted disk.
 
 ### Railway
 1. New Project → Deploy from GitHub repo.

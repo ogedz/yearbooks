@@ -9,7 +9,12 @@ from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, 'yearbook.db')
+# DATA_DIR lets the database live on a mounted persistent disk (e.g. Render's
+# disk feature) instead of the app's own ephemeral container filesystem.
+# Defaults to BASE_DIR for local dev where no separate disk is configured.
+DATA_DIR = os.environ.get('DATA_DIR', BASE_DIR)
+os.makedirs(DATA_DIR, exist_ok=True)
+DB_PATH = os.path.join(DATA_DIR, 'yearbook.db')
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 60 * 1024 * 1024  # 60MB upload cap (multi-photo batches)
